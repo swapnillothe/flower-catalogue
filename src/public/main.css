@@ -11,10 +11,25 @@ main{
   margin-top: 50px;
 }
 
+.homePageLink{
+  color:blueviolet;
+  text-align: center;
+}
+
+.guestBookHeading{
+  color:orange;
+  text-align: center;
+}
+
 .heading{
   color:orange;
   text-align: right;
   margin-right: 200px;
+}
+
+.comments{
+  font-size: 20px;
+  margin-top:10px;
 }
 
 .list_of_flowers{
@@ -27,6 +42,7 @@ main{
   padding-right:175px;
 }
 
-.guestBook{
-  margin-top: 20px;
+.submitButton{
+  background-color:rgb(223, 217, 217);
+  margin-top:10px;
 }

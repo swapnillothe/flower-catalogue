@@ -13,6 +13,8 @@ const app = (req, res) => {
       res.statusCode = 200;
       res.end();
     } catch (err) {
+      res.statusCode = 404;
+      res.write('404 - The page cannot be found');
       res.end();
     }
   })
