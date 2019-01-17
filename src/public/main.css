@@ -1,0 +1,32 @@
+main{
+  display:flex; 
+  flex-direction: row;
+}
+
+.flower img{
+  width:500px;
+  height: 600px;
+  width: 80%;
+  margin-left: 50px;
+  margin-top: 50px;
+}
+
+.heading{
+  color:orange;
+  text-align: right;
+  margin-right: 200px;
+}
+
+.list_of_flowers{
+  margin-top: 50px;
+  width:25%;
+}
+
+.watering_jar{
+  margin-top:400px;
+  padding-right:175px;
+}
+
+.guestBook{
+  margin-top: 20px;
+}
