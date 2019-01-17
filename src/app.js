@@ -2,12 +2,11 @@ const fs = require('fs');
 
 const getFilePath = function (url) {
   if (url == '/') return './index.html';
-  // if(url=='/main.css')return '/main.css';
   return './src/public' + url;
 }
 
 const app = (req, res) => {
-  let filePath = getFilePath(req.url);
+  const filePath = getFilePath(req.url);
   fs.readFile(filePath, (err, content) => {
     try {
       res.write(content);
