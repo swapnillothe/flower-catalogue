@@ -1,7 +1,9 @@
 const fs = require('fs');
 
 const getFilePath = function (url) {
-  if (url == '/') return './index.html';
+  if (url == '/') {
+    return './src/public/index.html';
+  }
   return './src/public' + url;
 }
 
@@ -29,9 +31,11 @@ const handleRequest = function (req, res) {
 
 const parseArgs = function (args) {
   const parsedArgs = {};
-  const argsToParse = args.split('&').map(x => x.split('='));
+  const argsToParse = args.split('&').map(arg => arg.split('='));
   argsToParse.map(arg => {
-    parsedArgs[arg[0]] = arg[1].replace(/\+/g, ' ');
+    const key = arg[0];
+    const value = arg[1].replace(/\+/g, ' ');
+    parsedArgs[key] = value;
   });
   const date = new Date().toLocaleString();
   parsedArgs.date = date;
@@ -41,14 +45,16 @@ const parseArgs = function (args) {
 const writeComments = function (req, res) {
   let commentsData = '';
   req.on('data', (chunk) => {
-    commentsData += chunk;
+    commentsData = commentsData + chunk;
   });
+
   req.on('end', () => {
-    fs.readFile('./src/public/commentsData.json', 'utf8', (err, comments) => {
+    const commentsFilePath = './src/public/commentsData.json';
+    fs.readFile(commentsFilePath, 'utf8', (err, comments) => {
       let commentsJsonData = JSON.parse(comments);
       commentsJsonData.push(parseArgs(commentsData));
       comments = JSON.stringify(commentsJsonData);
-      fs.writeFile('./src/public/commentsData.json', comments, () => { });
+      fs.writeFile(commentsFilePath, comments, () => { });
     });
     res.end();
   });
@@ -69,9 +75,17 @@ class App {
     this.routes.push(route);
   }
 
+  post(url, handler) {
+    const route = { url, handler, method: 'POST' };
+    this.routes.push(route);
+  }
+
   handleRequest(req, res) {
-    if (this.routes.some(isSameUrl.bind(null, req))) {
-      this.routes[0].handler(req, res);
+    const matchedRoutes = this.routes.filter(
+      isSameUrl.bind(null, req)
+    );
+    if (matchedRoutes.length > 0) {
+      matchedRoutes[0].handler(req, res);
     }
   }
 }
@@ -83,5 +97,7 @@ app.get('/waterJar.js', handleRequest);
 app.get('/photos/freshorigins.jpg', handleRequest);
 app.get('/photos/animated-flower-image-0021.gif', handleRequest);
 app.get('/guestBook.html', handleRequest);
+app.post('/guestBook.html', writeComments);
+app.get('/commentsData.json', handleRequest);
 
 module.exports = app.handleRequest.bind(app);
