@@ -46,3 +46,12 @@ main{
   background-color:rgb(223, 217, 217);
   margin-top:10px;
 }
+
+th,td{
+  text-align: left;
+  font-size: 20px;
+  border: 1px solid black;
+  font-family: sans-serif;
+  padding-left: 95px;
+  padding-right: 95px;
+}

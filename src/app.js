@@ -1,4 +1,6 @@
 const fs = require('fs');
+const createTable = require('./commentTable.js');
+let commentsData = require('./public/commentsData.json');
 
 const getFilePath = function (url) {
   if (url == '/') {
@@ -43,20 +45,22 @@ const parseArgs = function (args) {
 }
 
 const writeComments = function (req, res) {
-  let commentsData = '';
+  let commentsToAdd = '';
   req.on('data', (chunk) => {
-    commentsData = commentsData + chunk;
+    commentsToAdd = commentsToAdd + chunk;
   });
 
   req.on('end', () => {
     const commentsFilePath = './src/public/commentsData.json';
-    fs.readFile(commentsFilePath, 'utf8', (err, comments) => {
-      let commentsJsonData = JSON.parse(comments);
-      commentsJsonData.push(parseArgs(commentsData));
-      comments = JSON.stringify(commentsJsonData);
-      fs.writeFile(commentsFilePath, comments, () => { });
+    commentsData.unshift(parseArgs(commentsToAdd));
+    details = JSON.stringify(commentsData);
+    const tableFormat = createTable(commentsData);
+    fs.readFile('./src/public/guestBook.html', 'utf8', (err, content) => {
+      fs.writeFile(commentsFilePath, details, 'utf8', () => {
+        res.write(content + tableFormat);
+        res.end();
+      });
     });
-    res.end();
   });
 }
 
@@ -97,7 +101,8 @@ app.get('/waterJar.js', handleRequest);
 app.get('/photos/freshorigins.jpg', handleRequest);
 app.get('/photos/animated-flower-image-0021.gif', handleRequest);
 app.get('/guestBook.html', handleRequest);
-app.post('/guestBook.html', writeComments);
 app.get('/commentsData.json', handleRequest);
+app.get('/commentTable.js', handleRequest);
+app.post('/guestBook.html', writeComments);
 
 module.exports = app.handleRequest.bind(app);
