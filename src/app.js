@@ -79,7 +79,11 @@ app.get('/photos/freshorigins.jpg', handleRequest);
 app.get('/photos/animated-flower-image-0021.gif', handleRequest);
 app.get('/guestBook.html', renderGuestBook);
 app.get('/abeliophyllum.html', handleRequest);
+app.get('/agerantum.html', handleRequest);
 app.get('/photos/pbase-Abeliophyllum.jpg', handleRequest);
+app.get('/documents/Ageratum.pdf', handleRequest);
+app.get('/documents/Abeliophyllum.pdf', handleRequest);
+app.get('/photos/pbase-agerantum.jpg', handleRequest);
 app.get('/commentsData.json', handleRequest);
 app.post('/guestBook.html', writeComments);
 
