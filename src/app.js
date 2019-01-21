@@ -78,6 +78,8 @@ app.get('/waterJar.js', handleRequest);
 app.get('/photos/freshorigins.jpg', handleRequest);
 app.get('/photos/animated-flower-image-0021.gif', handleRequest);
 app.get('/guestBook.html', renderGuestBook);
+app.get('/abeliophyllum.html', handleRequest);
+app.get('/photos/pbase-Abeliophyllum.jpg', handleRequest);
 app.get('/commentsData.json', handleRequest);
 app.post('/guestBook.html', writeComments);
 
