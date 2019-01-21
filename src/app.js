@@ -8,6 +8,17 @@ const handleRequest = function (req, res) {
   sendFile(req, res);
 }
 
+const renderGuestBook = function (req, res) {
+  fs.readFile('./public/commentsData.json', (err, content) => {
+    const commentsData = JSON.parse(content);
+    fs.readFile('./public/guestBook.html', (err, data) => {
+      data += createTable(commentsData);
+      send(res, data);
+      return;
+    })
+  })
+}
+
 const writeComments = function (req, res) {
   let commentsToAdd = '';
   req.on('data', (chunk) => {
@@ -66,7 +77,7 @@ app.get('/main.css', handleRequest);
 app.get('/waterJar.js', handleRequest);
 app.get('/photos/freshorigins.jpg', handleRequest);
 app.get('/photos/animated-flower-image-0021.gif', handleRequest);
-app.get('/guestBook.html', handleRequest);
+app.get('/guestBook.html', renderGuestBook);
 app.get('/commentsData.json', handleRequest);
 app.post('/guestBook.html', writeComments);
 
