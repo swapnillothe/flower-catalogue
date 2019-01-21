@@ -1,47 +1,11 @@
 const fs = require('fs');
 const createTable = require('./commentTable.js');
-let commentsData = require('./public/commentsData.json');
-
-const getFilePath = function (url) {
-  if (url == '/') {
-    return './src/public/index.html';
-  }
-  return './src/public' + url;
-}
-
-const send = (res, content, statusCode = 200) => {
-  res.write(content);
-  res.statusCode = statusCode;
-  res.end();
-}
-
-const showFile = (req, res, filePath) => {
-  fs.readFile(filePath, (err, content) => {
-    try {
-      send(res, content);
-    } catch (err) {
-      send(res, '404 - The page cannot be found', 404);
-    }
-    return;
-  });
-}
+const parseComments = require('./commentData.js');
+const send = require('../util/sendRequest');
+const sendFile = require('../util/filePath.js')
 
 const handleRequest = function (req, res) {
-  const filePath = getFilePath(req.url);
-  showFile(req, res, filePath);
-}
-
-const parseArgs = function (args) {
-  const parsedArgs = {};
-  const argsToParse = args.split('&').map(arg => arg.split('='));
-  argsToParse.map(arg => {
-    const key = arg[0];
-    const value = arg[1].replace(/\+/g, ' ');
-    parsedArgs[key] = value;
-  });
-  const date = new Date().toLocaleString();
-  parsedArgs.date = date;
-  return parsedArgs;
+  sendFile(req, res);
 }
 
 const writeComments = function (req, res) {
@@ -51,15 +15,17 @@ const writeComments = function (req, res) {
   });
 
   req.on('end', () => {
-    const commentsFilePath = './src/public/commentsData.json';
-    commentsData.unshift(parseArgs(commentsToAdd));
-    details = JSON.stringify(commentsData);
-    const tableFormat = createTable(commentsData);
-    fs.readFile('./src/public/guestBook.html', 'utf8', (err, content) => {
-      fs.writeFile(commentsFilePath, details, 'utf8', () => {
-        res.write(content + tableFormat);
-        res.end();
-      });
+    fs.readFile('./public/commentsData.json', (err, content) => {
+      const commentsData = JSON.parse(content);
+      const commentsFilePath = './public/commentsData.json';
+      commentsData.unshift(parseComments(commentsToAdd));
+      const comments = JSON.stringify(commentsData);
+      const commentDataTable = createTable(commentsData);
+      fs.readFile('./public/guestBook.html', 'utf8', (err, guestBook) => {
+        fs.writeFile(commentsFilePath, comments, 'utf8', () => {
+          send(res, guestBook + commentDataTable);
+        });
+      })
     });
   });
 }
@@ -102,7 +68,6 @@ app.get('/photos/freshorigins.jpg', handleRequest);
 app.get('/photos/animated-flower-image-0021.gif', handleRequest);
 app.get('/guestBook.html', handleRequest);
 app.get('/commentsData.json', handleRequest);
-app.get('/commentTable.js', handleRequest);
 app.post('/guestBook.html', writeComments);
 
 module.exports = app.handleRequest.bind(app);

@@ -28,7 +28,7 @@ class Comment {
 const createTable = function (comments) {
   let tableData = '';
   comments.map(comment => {
-    let commentData = new Comment(comment);
+    const commentData = new Comment(comment);
     tableData += commentData.getTableFormat();
   });
   return tableData;
