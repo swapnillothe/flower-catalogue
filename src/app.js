@@ -12,7 +12,7 @@ const renderGuestBook = function (req, res) {
   fs.readFile('./public/commentsData.json', (err, content) => {
     const commentsData = JSON.parse(content);
     fs.readFile('./public/guestBook.html', (err, data) => {
-      data += createTable(commentsData);
+      data = data + createTable(commentsData);
       send(res, data);
       return;
     })
@@ -41,9 +41,14 @@ const writeComments = function (req, res) {
   });
 }
 
-const isSameUrl = (route1, route2) => {
-  return route1.url == route2.url &&
-    route1.method == route2.method;
+const isSameUrl = (req, route) => {
+  if (route.handler && !(route.method || route.url)) {
+    return true;
+  }
+  if (req.url == route.url && req.method == route.method) {
+    return true
+  };
+  return false;
 }
 
 class App {
@@ -61,30 +66,27 @@ class App {
     this.routes.push(route);
   }
 
+  use(handler) {
+    this.routes.push({ handler });
+  }
+
   handleRequest(req, res) {
     const matchedRoutes = this.routes.filter(
       isSameUrl.bind(null, req)
     );
-    if (matchedRoutes.length > 0) {
-      matchedRoutes[0].handler(req, res);
+    const next = () => {
+      if (matchedRoutes.length == 0) return;
+      const currentHandler = matchedRoutes[0];
+      matchedRoutes.shift();
+      currentHandler.handler(req, res, next);
     }
+    next();
   }
 }
 
 const app = new App();
-app.get('/', handleRequest);
-app.get('/main.css', handleRequest);
-app.get('/waterJar.js', handleRequest);
-app.get('/photos/freshorigins.jpg', handleRequest);
-app.get('/photos/animated-flower-image-0021.gif', handleRequest);
-app.get('/guestBook.html', renderGuestBook);
-app.get('/abeliophyllum.html', handleRequest);
-app.get('/agerantum.html', handleRequest);
-app.get('/photos/pbase-Abeliophyllum.jpg', handleRequest);
-app.get('/documents/Ageratum.pdf', handleRequest);
-app.get('/documents/Abeliophyllum.pdf', handleRequest);
-app.get('/photos/pbase-agerantum.jpg', handleRequest);
-app.get('/commentsData.json', handleRequest);
 app.post('/guestBook.html', writeComments);
+app.get('/guestBook.html', renderGuestBook);
+app.use(handleRequest);
 
 module.exports = app.handleRequest.bind(app);
