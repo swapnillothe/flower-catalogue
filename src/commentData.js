@@ -18,7 +18,7 @@ class CommentData {
     commentObject.date = new Date();
     this.separateKeyAndValue().map(arg => {
       const key = arg[0];
-      const value = arg[1].replace(/\+/g, ' ');
+      const value = unescape(arg[1]).replace(/\+/g, ' ');
       commentObject[key] = value;
     })
     return commentObject;
