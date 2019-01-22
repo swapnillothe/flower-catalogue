@@ -15,7 +15,7 @@ class CommentData {
 
   createCommentObject() {
     const commentObject = {};
-    commentObject.date = new Date().toLocaleString();
+    commentObject.date = new Date();
     this.separateKeyAndValue().map(arg => {
       const key = arg[0];
       const value = arg[1].replace(/\+/g, ' ');

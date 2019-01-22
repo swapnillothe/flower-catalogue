@@ -8,15 +8,32 @@ const handleRequest = function (req, res) {
   sendFile(req, res);
 }
 
+const getLocalTime = function (data) {
+  data.map(dataPart => {
+    dataPart.date = (new Date(dataPart.date)).toLocaleString();
+  });
+  return data;
+}
+
 const renderGuestBook = function (req, res) {
   fs.readFile('./public/commentsData.json', (err, content) => {
     const commentsData = JSON.parse(content);
-    fs.readFile('./public/guestBook.html', (err, data) => {
-      data = data + createTable(commentsData);
-      send(res, data);
+    getLocalTime(commentsData);
+    fs.readFile('./public/guestBook.html', "utf-8", (err, data) => {
+      const table = createTable(commentsData);
+      send(res, data.replace("_table_", table));
       return;
-    })
-  })
+    });
+  });
+}
+
+const refreshComments = function (req, res) {
+  fs.readFile('./public/commentsData.json', (err, content) => {
+    const commentsData = JSON.parse(content);
+    getLocalTime(commentsData);
+    const commentsHtml = createTable(commentsData);
+    send(res, commentsHtml);
+  });
 }
 
 const writeComments = function (req, res) {
@@ -26,17 +43,14 @@ const writeComments = function (req, res) {
   });
 
   req.on('end', () => {
-    fs.readFile('./public/commentsData.json', (err, content) => {
+    const commentsFilePath = './public/commentsData.json';
+    fs.readFile(commentsFilePath, (err, content) => {
       const commentsData = JSON.parse(content);
-      const commentsFilePath = './public/commentsData.json';
       commentsData.unshift(parseComments(commentsToAdd));
       const comments = JSON.stringify(commentsData);
-      const commentDataTable = createTable(commentsData);
-      fs.readFile('./public/guestBook.html', 'utf8', (err, guestBook) => {
-        fs.writeFile(commentsFilePath, comments, 'utf8', () => {
-          send(res, guestBook + commentDataTable);
-        });
-      })
+      fs.writeFile(commentsFilePath, comments, 'utf8', () => {
+        renderGuestBook(req, res);
+      });
     });
   });
 }
@@ -87,6 +101,7 @@ class App {
 const app = new App();
 app.post('/guestBook.html', writeComments);
 app.get('/guestBook.html', renderGuestBook);
+app.get('/comments', refreshComments);
 app.use(handleRequest);
 
 module.exports = app.handleRequest.bind(app);

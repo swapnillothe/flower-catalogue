@@ -1,32 +1,33 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <title>GuestBook</title>
   <link rel='stylesheet' type='text/css' href="/main.css" />
+  <script src="/refreshComments.js"></script>
 </head>
-<body>
-  <h1 class='centreHeading'>
-    <a href="/" class='homePageLink'><<</a>
-    Guest Book
-  </h1>
-  <div style='margin-left: 10px'>
-    <h2>Leave a comment</h2>
-    <form method="POST" action="/guestBook.html">
-        <div class='comments'>
-            Name:
-            <input type="text" name="Name" >
-        </div> 
-        <div class='comments'>
-          Comment:
-          <textarea name='comment' cols="30" rows="5"></textarea>
-          <input type='submit' value='Submit'>
-        </div>
+
+<body id="main">
+  <div class="centreHeading">
+    <h1> <a href="/" class='homePageLink'><< </a> Guest Book </h1>
+  </div> 
+  
+  <h1>Leave a comment</h1>
+
+  <form method="POST" action="/guestBook.html">
+    <div class='comments'>
+      Name: <input type="text" name="Name" required>
+    </div>
+    <div class='comments'>
+      Comment: <textarea name='comment' cols="30" rows="5" required></textarea>
+    </div>
+    <input type='submit' value='Submit' class="buttons">  
     <hr>
-  </div>
-    </form>
-    <table>
-      <tr>
-        <th>Date</th>
-        <th>Name</th>
-        <th>Comment</th>
-      </tr>
+  </form>
+  <p>
+    Comments <button class="buttons" onclick="refreshComments()"> &#x21bb</button>
+  </p>
+  <div class="comments" id="userComments">_table_</div>
+</body>
+
+</html>

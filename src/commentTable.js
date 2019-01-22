@@ -21,16 +21,22 @@ class Comment {
     const nameRow = this.getAuthorRow();
     const commentRow = this.getCommentRow();
     const dateRow = this.getDateRow();
-    return '<tr>' +dateRow + nameRow + commentRow + '</tr>';
+    return '<tr>' + dateRow + nameRow + commentRow + '</tr>';
   }
 }
 
 const createTable = function (comments) {
-  let tableData = '';
+  let tableData = `<table border = 2>
+  <tr>
+    <th>DateAndTime</th>
+    <th>Name</th>
+    <th>Comments</th>
+  </tr>`;
   comments.map(comment => {
     const commentData = new Comment(comment);
     tableData += commentData.getTableFormat();
   });
+  tableData += '</table>';
   return tableData;
 }
 

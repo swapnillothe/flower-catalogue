@@ -55,3 +55,8 @@ th,td{
   padding-left: 95px;
   padding-right: 95px;
 }
+
+.buttons{
+  width: 100px;
+  height:20px;
+}
