@@ -37,26 +37,36 @@ const getCommentPage = function () {
 
 const isUserLoggedIn = function (req, res) {
   const cookie = req.headers.cookie;
-  if (cookie) return true;
+  if (cookie) {
+    return true;
+  }
+  loggedInUsers.push(cookie);
   return false;
 }
 
-const loggedInUsers = []
+const loggedInUsers = [];
 
 const handleLogIn = function (req, res) {
+  res.statusCode = 302;
+  res.setHeader('Set-Cookie', `userName=${req.body}`)
+  res.setHeader('location', '/guestBook.html');
+  res.end();
+}
+
+const serveGuestBook = function (req, res) {
   let guestBook = getLoginPage();
   if (isUserLoggedIn(req, res)) {
     guestBook = getCommentPage();
-   }
+  }
   res.write(guestBook);
   res.end();
 }
 
 const handleLogOut = function (req, res) {
-  res.setHeader('Set-Cookie', 'Expires:Mon, 18 Feb 2013 19:08:41 GMT');
+  res.setHeader('Set-Cookie', 'userName=deleted; expires=Thu, 18 Dec 2013 12:00:00 UTC');
   res.statusCode = 302;
   res.setHeader('location', '/guestBook.html');
-  handleLogIn(req, res);
+  res.end();
 }
 
 const logRequest = function (req, res, next) {
@@ -74,27 +84,33 @@ const refreshComments = function (req, res) {
 }
 
 const writeComments = function (req, res) {
-  let commentsToAdd = '';
-  req.on('data', (chunk) => {
-    commentsToAdd = commentsToAdd + chunk;
+  let commentsToAdd = req.body;
+  const commentsFilePath = './public/commentsData.json';
+  fs.readFile(commentsFilePath, (err, content) => {
+    const commentsData = JSON.parse(content);
+    commentsData.unshift(parseComments(commentsToAdd));
+    fs.writeFile(commentsFilePath, JSON.stringify(commentsData), 'utf8', () => {
+      serveGuestBook(req, res);
+    });
   });
 
+}
+
+const readPostData = function (req, res, next) {
+  let postedData = '';
+  req.on('data', (chunk) => {
+    postedData = postedData + chunk;
+  });
   req.on('end', () => {
-    const commentsFilePath = './public/commentsData.json';
-    fs.readFile(commentsFilePath, (err, content) => {
-      const commentsData = JSON.parse(content);
-      commentsData.unshift(parseComments(commentsToAdd));
-      const comments = JSON.stringify(commentsData);
-      fs.writeFile(commentsFilePath, comments, 'utf8', () => {
-        handleLogIn(req, res);
-      });
-    });
+    req.body = postedData;
+    next();
   });
 }
 
 app.use(logRequest);
+app.use(readPostData);
 app.post('/guestBook.html', writeComments);
-app.get('/guestBook.html', handleLogIn);
+app.get('/guestBook.html', serveGuestBook);
 app.get('/comments', refreshComments);
 app.post('/login', handleLogIn);
 app.post('/logout', handleLogOut);
