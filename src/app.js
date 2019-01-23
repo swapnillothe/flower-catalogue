@@ -4,6 +4,8 @@ const parseComments = require('./commentData.js');
 const send = require('../util/sendRequest');
 const sendFile = require('../util/filePath.js');
 const formsTemplate = require('../public/formsTemplate');
+const App = require('./framework');
+const app = new App();
 
 const loadedData = {};
 
@@ -23,38 +25,6 @@ const getLocalTime = function (data) {
   return data;
 }
 
-// const renderGuestBook = function (req, res) {
-//   let htmlContent = loadedData.guestBookTemplate;
-//   htmlContent = htmlContent.replace('_FORM_', formsTemplate.logInForm);
-//   fs.readFile('./public/commentsData.json', (err, content) => {
-//     const commentsData = JSON.parse(content);
-//     getLocalTime(commentsData);
-//     const table = createTable(commentsData);
-//     send(res, htmlContent.replace("_table_", table));
-//     return;
-//   });
-// }
-
-const fillTemplate = function (req, res, data) {
-  res.statusCode = 302;
-  res.setHeader('location', '/guestBook.html');
-  res.write(data);
-  res.end();
-}
-
-// const renderLogIn = function (req, res) {
-//   let htmlContent = loadedData.guestBookTemplate;
-//   htmlContent = htmlContent.replace('_FORM_', formsTemplate.commentForm('swapnil'));
-//   fs.readFile('./public/commentsData.json', (err, content) => {
-//     const commentsData = JSON.parse(content);
-//     getLocalTime(commentsData);
-//     const table = createTable(commentsData);
-//     const formContent = htmlContent.replace("_table_", table);
-//     fillTemplate(req, res, formContent);
-//     return;
-//   });
-// }
-
 const getLoginPage = function () {
   const logInPage = formsTemplate.logInForm();
   return loadedData.guestBookTemplate.replace('_FORM_', logInPage);
@@ -71,17 +41,26 @@ const isUserLoggedIn = function (req, res) {
   return false;
 }
 
+const loggedInUsers = []
+
 const handleLogIn = function (req, res) {
   let guestBook = getLoginPage();
   if (isUserLoggedIn(req, res)) {
     guestBook = getCommentPage();
-  }
+   }
   res.write(guestBook);
   res.end();
 }
 
-const logRequest = function(req,res,next){
-  console.log(req.method,req.url);
+const handleLogOut = function (req, res) {
+  res.setHeader('Set-Cookie', 'Expires:Mon, 18 Feb 2013 19:08:41 GMT');
+  res.statusCode = 302;
+  res.setHeader('location', '/guestBook.html');
+  handleLogIn(req, res);
+}
+
+const logRequest = function (req, res, next) {
+  console.log(req.method, req.url);
   next();
 }
 
@@ -107,61 +86,18 @@ const writeComments = function (req, res) {
       commentsData.unshift(parseComments(commentsToAdd));
       const comments = JSON.stringify(commentsData);
       fs.writeFile(commentsFilePath, comments, 'utf8', () => {
-        renderGuestBook(req, res);
+        handleLogIn(req, res);
       });
     });
   });
 }
 
-const isSameUrl = (req, route) => {
-  if (route.handler && !(route.method || route.url)) {
-    return true;
-  }
-  if (req.url == route.url && req.method == route.method) {
-    return true
-  };
-  return false;
-}
-
-class App {
-  constructor() {
-    this.routes = [];
-  }
-
-  get(url, handler) {
-    const route = { url, handler, method: 'GET' };
-    this.routes.push(route);
-  }
-
-  post(url, handler) {
-    const route = { url, handler, method: 'POST' };
-    this.routes.push(route);
-  }
-
-  use(handler) {
-    this.routes.push({ handler });
-  }
-
-  handleRequest(req, res) {
-    const matchedRoutes = this.routes.filter(
-      isSameUrl.bind(null, req)
-    );
-    const next = () => {
-      if (matchedRoutes.length == 0) return;
-      const currentHandler = matchedRoutes[0];
-      matchedRoutes.shift();
-      currentHandler.handler(req, res, next);
-    }
-    next();
-  }
-}
-
-const app = new App();
 app.use(logRequest);
 app.post('/guestBook.html', writeComments);
 app.get('/guestBook.html', handleLogIn);
 app.get('/comments', refreshComments);
-app.post('/logIn', handleLogIn);
+app.post('/login', handleLogIn);
+app.post('/logout', handleLogOut);
 app.use(handleRequest);
 readHtmlTemplate();
 module.exports = app.handleRequest.bind(app);

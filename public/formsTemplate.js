@@ -1,6 +1,6 @@
 const forms =
 {
-	logInForm:()=> `
+  logInForm: () => `
 <h2 style="margin-left:20px;">Login to comment</h2>
 <form action="/login" method="POST" style="padding:10px; margin-left: 30px;">
 Name:
@@ -9,9 +9,9 @@ Name:
 </form>
 <br><br>`,
 
-	commentForm:(name) =>
-	`<h2 style="margin-left:20px;">Leave a comment</h2>
-	<form action="/guestBook.html" method="POST" style="padding:10px; margin-left: 30px;">
+  commentForm: (name) =>
+    `<h2 style="margin-left:20px;">Leave a comment</h2>
+	<form action="/logout" method="POST" style="padding:10px; margin-left: 30px;">
 		Name: ${name}
 		<input type="submit" value="Logout" class="buttons" >
 		</form>
