@@ -1,16 +1,24 @@
 const homeUrl = './public/index.html';
 const publicUrl = './public';
 const fs = require('fs');
-const send = require('./sendRequest.js');
+
+const getContentType = function (contentTitle) {
+  if (contentTitle.includes('.pdf')) {
+    return 'application/pdf';
+  }
+  return `text/${contentTitle.split('.')[2]}`;
+}
 
 const sendFile = (req, res) => {
   const filePath = getFilePath(req.url);
   fs.readFile(filePath, (err, content) => {
     if (err) {
-      send(res, '404 - The page cannot be found', 404);
+      res.status(404).send('404 - The page cannot be found');
       return;
     }
-    send(res, content);
+    const contentType = getContentType(filePath);
+    res.set('Content-Type', `${contentType}`);
+    res.status(200).send(content);
     return;
   });
 }

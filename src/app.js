@@ -1,11 +1,10 @@
 const fs = require('fs');
 const createTable = require('./commentTable.js');
 const parseComments = require('./commentData.js');
-const send = require('../util/sendRequest');
 const sendFile = require('../util/filePath.js');
 const formsTemplate = require('../public/formsTemplate');
-const App = require('./framework');
-const app = new App();
+const express = require('express');
+const app = express();
 
 const loadedData = {};
 
@@ -79,7 +78,7 @@ const refreshComments = function (req, res) {
     const commentsData = JSON.parse(content);
     getLocalTime(commentsData);
     const commentsHtml = createTable(commentsData);
-    send(res, commentsHtml);
+    res.send(commentsHtml);
   });
 }
 
@@ -116,4 +115,4 @@ app.post('/login', handleLogIn);
 app.post('/logout', handleLogOut);
 app.use(handleRequest);
 readHtmlTemplate();
-module.exports = app.handleRequest.bind(app);
+module.exports = app;
