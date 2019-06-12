@@ -2,8 +2,9 @@ const fs = require('fs');
 const createTable = require('./commentTable.js');
 const parseComments = require('./commentData.js');
 const sendFile = require('../util/filePath.js');
+const PORT = process.env.PORT || 8080;
 const formsTemplate = require('../public/formsTemplate');
-const express = require('express');
+const express = require("express");
 const app = express();
 
 const loadedData = {};
@@ -29,8 +30,8 @@ const getLoginPage = function () {
   return loadedData.guestBookTemplate.replace('_FORM_', logInPage);
 }
 
-const getCommentPage = function () {
-  const commentPage = formsTemplate.commentForm();
+const getCommentPage = function (name) {
+  const commentPage = formsTemplate.commentForm(name);
   return loadedData.guestBookTemplate.replace('_FORM_', commentPage);
 }
 
@@ -47,22 +48,27 @@ const loggedInUsers = [];
 
 const handleLogIn = function (req, res) {
   res.statusCode = 302;
-  res.setHeader('Set-Cookie', `userName=${req.body}`)
+  res.setHeader('Set-Cookie', `${req.body}`)
   res.setHeader('location', '/guestBook.html');
   res.end();
+}
+
+const getUserName = function(req){
+  return req.headers.cookie.split("=")[1];
 }
 
 const serveGuestBook = function (req, res) {
   let guestBook = getLoginPage();
   if (isUserLoggedIn(req, res)) {
-    guestBook = getCommentPage();
+    const commentor = getUserName(req);
+    guestBook = getCommentPage(commentor);
   }
   res.write(guestBook);
   res.end();
 }
 
 const handleLogOut = function (req, res) {
-  res.setHeader('Set-Cookie', 'userName=deleted; expires=Thu, 18 Dec 2013 12:00:00 UTC');
+  res.setHeader('Set-Cookie', 'name=deleted; expires=Thu, 18 Dec 2013 12:00:00 UTC');
   res.statusCode = 302;
   res.setHeader('location', '/guestBook.html');
   res.end();
@@ -74,7 +80,8 @@ const logRequest = function (req, res, next) {
 }
 
 const refreshComments = function (req, res) {
-  fs.readFile('./public/commentsData.json', (err, content) => {
+  fs.readFile('./public/commentsData.json', "UTF8", (err, content) => {
+    console.log("this is content",content);
     const commentsData = JSON.parse(content);
     getLocalTime(commentsData);
     const commentsHtml = createTable(commentsData);
@@ -87,12 +94,13 @@ const writeComments = function (req, res) {
   const commentsFilePath = './public/commentsData.json';
   fs.readFile(commentsFilePath, (err, content) => {
     const commentsData = JSON.parse(content);
-    commentsData.unshift(parseComments(commentsToAdd));
+    const parsedComment = parseComments(commentsToAdd);
+    parsedComment.name = getUserName(req);
+    commentsData.unshift(parsedComment);
     fs.writeFile(commentsFilePath, JSON.stringify(commentsData), 'utf8', () => {
       serveGuestBook(req, res);
     });
   });
-
 }
 
 const readPostData = function (req, res, next) {
@@ -106,8 +114,11 @@ const readPostData = function (req, res, next) {
   });
 }
 
+
+
 app.use(logRequest);
 app.use(readPostData);
+
 app.post('/guestBook.html', writeComments);
 app.get('/guestBook.html', serveGuestBook);
 app.get('/comments', refreshComments);
@@ -115,4 +126,7 @@ app.post('/login', handleLogIn);
 app.post('/logout', handleLogOut);
 app.use(handleRequest);
 readHtmlTemplate();
-module.exports = app;
+
+app.listen(PORT,()=>{
+  console.log(`server is listening on ${PORT}`);
+})

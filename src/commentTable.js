@@ -1,6 +1,6 @@
 class Comment {
-  constructor({ Name, comment, date }) {
-    this.name = Name;
+  constructor({ name, comment, date }) {
+    this.name = name;
     this.comment = comment;
     this.date = date;
   }
