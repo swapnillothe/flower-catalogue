@@ -37,7 +37,7 @@ const getCommentPage = function (name) {
 
 const isUserLoggedIn = function (req, res) {
   const cookie = req.headers.cookie;
-  if (cookie) {
+  if (cookie && cookie.split('; ').some(nameValue => nameValue.startsWith('name='))) {
     return true;
   }
   loggedInUsers.push(cookie);
@@ -53,17 +53,20 @@ const handleLogIn = function (req, res) {
   res.end();
 }
 
-const getUserName = function(req){
-  return req.headers.cookie.split("=")[1];
+const getUserName = function (req) {
+  const cookies = req.headers.cookie.split("; ");
+  const nameValue = cookies.find(nameValue => nameValue.startsWith('name=')) || 'default';
+  return nameValue.replace('name=', '');
 }
 
 const serveGuestBook = function (req, res) {
-  let guestBook = getLoginPage();
   if (isUserLoggedIn(req, res)) {
     const commentor = getUserName(req);
-    guestBook = getCommentPage(commentor);
+    res.write(getCommentPage(commentor));
+    res.end();
+    return;
   }
-  res.write(guestBook);
+  res.write(getLoginPage());
   res.end();
 }
 
@@ -81,7 +84,7 @@ const logRequest = function (req, res, next) {
 
 const refreshComments = function (req, res) {
   fs.readFile('./public/commentsData.json', "UTF8", (err, content) => {
-    console.log("this is content",content);
+    console.log("this is content", content);
     const commentsData = JSON.parse(content);
     getLocalTime(commentsData);
     const commentsHtml = createTable(commentsData);
@@ -127,6 +130,6 @@ app.post('/logout', handleLogOut);
 app.use(handleRequest);
 readHtmlTemplate();
 
-app.listen(PORT,()=>{
+app.listen(PORT, () => {
   console.log(`server is listening on ${PORT}`);
 })

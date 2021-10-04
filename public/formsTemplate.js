@@ -1,5 +1,4 @@
-const forms =
-{
+const forms ={
   logInForm: () => `
 <h2 style="margin-left:20px;">Login to comment</h2>
 <form action="/login" method="POST" style="padding:10px; margin-left: 30px;">
