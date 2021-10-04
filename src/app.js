@@ -19,7 +19,7 @@ const handleRequest = function (req, res) {
 }
 
 const getLocalTime = function (data) {
-  data.map(dataPart => {
+  data.forEach(dataPart => {
     dataPart.date = (new Date(dataPart.date)).toLocaleString();
   });
   return data;
@@ -86,8 +86,7 @@ const refreshComments = function (req, res) {
   fs.readFile('./public/commentsData.json', "UTF8", (err, content) => {
     const commentsData = JSON.parse(content);
     getLocalTime(commentsData);
-    const commentsHtml = createTable(commentsData);
-    res.send(commentsHtml);
+    res.json(commentsData);
   });
 }
 

@@ -32,7 +32,7 @@ const createTable = function (comments) {
     <th>Name</th>
     <th>Comments</th>
   </tr>`;
-  comments.map(comment => {
+  comments.forEach(comment => {
     const commentData = new Comment(comment);
     tableData += commentData.getTableFormat();
   });
