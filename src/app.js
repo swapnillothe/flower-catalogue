@@ -84,7 +84,6 @@ const logRequest = function (req, res, next) {
 
 const refreshComments = function (req, res) {
   fs.readFile('./public/commentsData.json', "UTF8", (err, content) => {
-    console.log("this is content", content);
     const commentsData = JSON.parse(content);
     getLocalTime(commentsData);
     const commentsHtml = createTable(commentsData);
