@@ -4,7 +4,7 @@ const createElementWithText = (tag, text) =>{
   return element
 }
 
-const refreshComments = () => {
+const refreshComments = (document) => {
   fetch('/comments')
     .then(function (response) {
       return response.json();
@@ -37,4 +37,4 @@ const refreshComments = () => {
     });
 };
 
-window.onload = refreshComments();
+window.onload = refreshComments(document);
