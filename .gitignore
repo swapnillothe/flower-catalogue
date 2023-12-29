@@ -1,3 +1,8 @@
 node_modules/
 package-lock.json
 public/commentsData.json
+.DS_Store
+public/.DS_Store
+.metals/
+.vscode/
+yarn.lock
